@@ -1,1 +1,38 @@
-/* You can add global styles to this file, and also import other style files */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Estilos globales opcionales */
+html, body { height: 100%; }
+body { @apply bg-neutral-50 text-neutral-900 dark:bg-neutral-900 dark:text-neutral-100; }
+
+/* Asterisco para campos obligatorios */
+.req-star::after {
+  content: " *";
+  color: #e11d48; /* rose-600 */
+  font-weight: 600;
+}
+
+/* Asterisco automático para campos con control requerido (soporte :has) */
+div:has(> input[formcontrolname='title']) > label::after,
+div:has(> input[formcontrolname='startDate']) > label::after,
+div:has(> input[formcontrolname='timeOfDay']) > label::after,
+div:has(> select[formcontrolname='frequency']) > label::after,
+div:has(> input[formcontrolname='interval']) > label::after {
+  content: " *";
+  color: #e11d48;
+  font-weight: 600;
+}
+
+/* Solo lectura para lectores de pantalla */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

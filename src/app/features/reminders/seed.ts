@@ -1,0 +1,42 @@
+import { Reminder } from '../../core/models/reminder.model';
+
+export const demoReminders: Reminder[] = [
+  {
+    id: 'demo-1',
+    title: 'Tomar medicación',
+    notes: 'Después del desayuno',
+    categoryId: 'health',
+    timezone: 'Europe/Madrid',
+    startDate: new Date().toISOString(),
+    timeOfDay: '08:00',
+    recurrence: { frequency: 'daily', interval: 1 },
+    leadTimes: [{ unit: 'hour', value: 1 }],
+    priority: 'med',
+    status: 'active',
+    lastCompletedAt: undefined,
+    nextOccurrence: new Date().toISOString(),
+    history: [],
+    ownerId: 'demo',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'demo-2',
+    title: 'ITV Coche',
+    categoryId: 'vehicle',
+    timezone: 'Europe/Madrid',
+    startDate: new Date().toISOString(),
+    timeOfDay: '10:30',
+    recurrence: { frequency: 'yearly', interval: 1 },
+    leadTimes: [{ unit: 'week', value: 1 }, { unit: 'day', value: 1 }],
+    priority: 'high',
+    status: 'active',
+    lastCompletedAt: undefined,
+    nextOccurrence: new Date().toISOString(),
+    history: [],
+    ownerId: 'demo',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+];
+

@@ -1,0 +1,334 @@
+import { Component, signal, computed, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { SettingsService } from '../../core/services/settings.service';
+import { RemindersMockService } from '../reminders/reminders.mock.service';
+import { LeadTime } from '../../core/models/recurrence.types';
+
+type ThemePref = 'system' | 'light' | 'dark';
+
+@Component({
+  standalone: true,
+  selector: 'app-settings',
+  imports: [CommonModule],
+  template: `
+    <div class="p-4 space-y-6 max-w-screen-md mx-auto">
+      <header>
+        <h1 class="text-xl font-semibold">Ajustes</h1>
+        <p class="text-sm text-neutral-500">Preferencias básicas y acerca de la app</p>
+      </header>
+
+      <section class="space-y-3">
+        <h2 class="text-lg font-medium">Apariencia</h2>
+        <div class="flex gap-3 text-sm">
+          <label class="inline-flex items-center gap-2">
+            <input type="radio" name="theme" value="system" [checked]="theme()==='system'" (change)="setTheme('system')" /> Sistema
+          </label>
+          <label class="inline-flex items-center gap-2">
+            <input type="radio" name="theme" value="light" [checked]="theme()==='light'" (change)="setTheme('light')" /> Claro
+          </label>
+          <label class="inline-flex items-center gap-2">
+            <input type="radio" name="theme" value="dark" [checked]="theme()==='dark'" (change)="setTheme('dark')" /> Oscuro
+          </label>
+        </div>
+      </section>
+
+      <section class="space-y-3">
+        <h2 class="text-lg font-medium">Formato de hora</h2>
+        <div class="flex gap-3 text-sm">
+          <label class="inline-flex items-center gap-2">
+            <input type="radio" name="hourfmt" value="24" [checked]="hourFormat()==='24'" (change)="setHourFormat('24')" /> 24 horas
+          </label>
+          <label class="inline-flex items-center gap-2">
+            <input type="radio" name="hourfmt" value="12" [checked]="hourFormat()==='12'" (change)="setHourFormat('12')" /> 12 horas (AM/PM)
+          </label>
+        </div>
+      </section>
+
+      <section class="space-y-3">
+        <h2 class="text-lg font-medium">Pestaña inicial</h2>
+        <div class="flex gap-3 text-sm">
+          <label class="inline-flex items-center gap-2">
+            <input type="radio" name="starttab" value="home" [checked]="initialTab()==='home'" (change)="setInitialTab('home')" /> Inicio (por defecto)
+          </label>
+          <label class="inline-flex items-center gap-2">
+            <input type="radio" name="starttab" value="calendar" [checked]="initialTab()==='calendar'" (change)="setInitialTab('calendar')" /> Calendario
+          </label>
+          <label class="inline-flex items-center gap-2">
+            <input type="radio" name="starttab" value="settings" [checked]="initialTab()==='settings'" (change)="setInitialTab('settings')" /> Ajustes
+          </label>
+        </div>
+      </section>
+
+      <section class="space-y-3">
+        <h2 class="text-lg font-medium">Avisos por defecto</h2>
+        <div class="flex flex-wrap gap-3 text-sm">
+          <label class="inline-flex items-center gap-2">
+            <input type="checkbox" [checked]="hasLead('week',1)" (change)="toggleLeadTime({unit:'week', value:1})" /> 1 semana
+          </label>
+          <label class="inline-flex items-center gap-2">
+            <input type="checkbox" [checked]="hasLead('day',1)" (change)="toggleLeadTime({unit:'day', value:1})" /> 1 día
+          </label>
+          <label class="inline-flex items-center gap-2">
+            <input type="checkbox" [checked]="hasLead('hour',1)" (change)="toggleLeadTime({unit:'hour', value:1})" /> 1 hora
+          </label>
+        </div>
+      </section>
+
+      <section class="space-y-3">
+        <h2 class="text-lg font-medium">Exportar / Importar</h2>
+        <div class="flex flex-wrap gap-3">
+          <button type="button" (click)="exportJSON()" class="inline-flex items-center rounded border px-3 py-2 text-sm border-neutral-300 dark:border-neutral-700">Exportar JSON</button>
+          <button type="button" (click)="exportCSV()" class="inline-flex items-center rounded border px-3 py-2 text-sm border-neutral-300 dark:border-neutral-700">Exportar CSV</button>
+          <label class="inline-flex items-center gap-2 cursor-pointer">
+            <span class="inline-flex items-center rounded border px-3 py-2 text-sm border-neutral-300 dark:border-neutral-700">Importar JSON</span>
+            <input type="file" accept="application/json,.json" class="hidden" (change)="onImportJSON($event)" />
+          </label>
+          <label class="inline-flex items-center gap-2 cursor-pointer">
+            <span class="inline-flex items-center rounded border px-3 py-2 text-sm border-neutral-300 dark:border-neutral-700">Importar CSV</span>
+            <input type="file" accept="text/csv,.csv" class="hidden" (change)="onImportCSV($event)" />
+          </label>
+        </div>
+        <p class="text-xs text-neutral-500">CSV es compatible con Excel. La importación actualmente acepta JSON exportado por la app.</p>
+      </section>
+
+      <section class="space-y-3">
+        <h2 class="text-lg font-medium">Datos</h2>
+        <div class="flex flex-wrap gap-3">
+          <button type="button" (click)="clearLocalData()" class="inline-flex items-center rounded border px-3 py-2 text-sm border-neutral-300 dark:border-neutral-700">Borrar datos de recordatorios</button>
+          <button type="button" (click)="clearAllData()" class="inline-flex items-center rounded border px-3 py-2 text-sm border-red-400 text-red-600 dark:border-red-500">Borrar TODOS los datos</button>
+        </div>
+        <p class="text-xs text-neutral-500">Elimina datos locales de pruebas. La opción en rojo borra todas las preferencias (tema, recordatorios, etc.).</p>
+      </section>
+
+      <section class="space-y-2 text-sm">
+        <h2 class="text-lg font-medium">Acerca de</h2>
+        <div class="rounded border p-3 border-neutral-300 dark:border-neutral-700">
+          <p><strong>Loop4U</strong> v0.0.0</p>
+          <p>Desarrollado por Alonso Viñé — <a href="https://alonsovine.github.io/portfolio/" target="_blank" class="text-emerald-600 underline">alonsovine.github.io/portfolio</a></p>
+          <p class="text-neutral-500">© 2025. Todos los derechos reservados.</p>
+        </div>
+      </section>
+    </div>
+  `
+})
+export class SettingsPage {
+  private settings = inject(SettingsService);
+  private reminders = inject(RemindersMockService);
+
+  theme = signal<ThemePref>(this.readTheme());
+  hourFormat = computed(() => this.settings.hourFormat());
+  defaultLeads = computed(() => this.settings.defaultLeadTimes());
+
+  setTheme(pref: ThemePref) {
+    this.theme.set(pref);
+    if (pref === 'system') {
+      localStorage.removeItem('theme');
+      document.documentElement.classList.remove('dark');
+    } else if (pref === 'light') {
+      localStorage.setItem('theme', 'light');
+      document.documentElement.classList.remove('dark');
+    } else {
+      localStorage.setItem('theme', 'dark');
+      document.documentElement.classList.add('dark');
+    }
+  }
+
+  clearLocalData() {
+    localStorage.removeItem('loop4u.reminders');
+    alert('Datos locales eliminados.');
+  }
+
+  clearAllData() {
+    const ok = confirm('¿Seguro que quieres borrar TODOS los datos locales de Loop4U? Esta acción no se puede deshacer.');
+    if (!ok) return;
+    try {
+      // Preferible limpiar claves conocidas, pero aquí se solicita un borrado total.
+      localStorage.clear();
+      sessionStorage.clear();
+      alert('Todos los datos locales han sido eliminados. Recarga la página para aplicar los cambios.');
+    } catch {
+      alert('No se pudieron borrar los datos locales. Revisa permisos del navegador.');
+    }
+  }
+
+  private readTheme(): ThemePref {
+    const v = localStorage.getItem('theme');
+    return (v === 'light' || v === 'dark') ? v : 'system';
+  }
+
+  // Preferencias: formato de hora
+  setHourFormat(fmt: '24'|'12') { this.settings.setHourFormat(fmt); }
+
+  // Preferencias: pestaña inicial
+  initialTab() { return this.settings.initialTab(); }
+  setInitialTab(tab: 'home'|'calendar'|'settings') { this.settings.setInitialTab(tab); }
+
+  // Preferencias: anticipos por defecto (checkboxes simples)
+  toggleLeadTime(target: LeadTime) {
+    const list = [...this.defaultLeads()];
+    const idx = list.findIndex(l => l.unit === target.unit && l.value === target.value);
+    if (idx >= 0) list.splice(idx, 1); else list.push(target);
+    // ordenar por duración aproximada
+    const weight = (l: LeadTime) => ({ minute: 1, hour: 60, day: 1440, week: 10080 } as any)[l.unit] * l.value;
+    list.sort((a, b) => weight(a) - weight(b));
+    this.settings.setDefaultLeadTimes(list);
+  }
+
+  hasLead(unit: 'minute'|'hour'|'day'|'week', value: number): boolean {
+    return this.defaultLeads().some(l => l.unit === unit && l.value === value);
+  }
+
+  // Export/Import
+  exportJSON() {
+    const data = this.reminders.listAll();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    this.triggerDownload(url, 'loop4u-reminders.json');
+  }
+
+  exportCSV() {
+    const rows = this.reminders.listAll();
+    const header = ['id','title','startDate','timeOfDay','frequency','interval','nextOccurrence','priority','status'];
+    const lines = [header.join(',')].concat(rows.map(r => [
+      r.id,
+      escapeCsv(r.title),
+      r.startDate,
+      r.timeOfDay,
+      r.recurrence.frequency,
+      String(r.recurrence.interval),
+      r.nextOccurrence,
+      r.priority,
+      r.status,
+    ].join(',')));
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    this.triggerDownload(url, 'loop4u-reminders.csv');
+
+    function escapeCsv(s: string) {
+      if (s == null) return '';
+      const needs = /[",\n]/.test(s);
+      return needs ? '"' + s.replace(/"/g,'""') + '"' : s;
+    }
+  }
+
+  onImportJSON(event: Event) {
+    const input = event.target as HTMLInputElement | null;
+    if (!input) return;
+    const file = input.files && input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(String(reader.result));
+        if (!Array.isArray(parsed)) throw new Error('Formato inválido');
+        for (const r of parsed) {
+          // Map a entrada a los campos de creación
+          const leadTimes: LeadTime[] = Array.isArray(r.leadTimes) ? r.leadTimes : this.defaultLeads();
+          this.reminders.create({
+            title: r.title ?? 'Sin título',
+            notes: r.notes ?? undefined,
+            categoryId: r.categoryId ?? undefined,
+            timezone: r.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone,
+            startDate: r.startDate ?? new Date().toISOString(),
+            timeOfDay: r.timeOfDay ?? '09:00',
+            recurrence: r.recurrence ?? { frequency: 'daily', interval: 1 },
+            leadTimes,
+            priority: r.priority ?? 'med',
+            status: r.status ?? 'active',
+            lastCompletedAt: r.lastCompletedAt ?? undefined,
+            nextOccurrence: r.nextOccurrence ?? new Date().toISOString(),
+            history: Array.isArray(r.history) ? r.history : [],
+            ownerId: r.ownerId ?? 'import',
+            createdAt: r.createdAt ?? new Date().toISOString(),
+            updatedAt: r.updatedAt ?? new Date().toISOString(),
+          } as any);
+        }
+        alert('Importación completada');
+      } catch (e) {
+        const msg = (e as any)?.message || String(e);
+        alert('Error al importar JSON: ' + msg);
+      }
+      input.value = '';
+    };
+    reader.readAsText(file);
+  }
+
+  private triggerDownload(url: string, filename: string) {
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  onImportCSV(event: Event) {
+    const input = event.target as HTMLInputElement | null;
+    if (!input) return;
+    const file = input.files && input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const text = String(reader.result ?? '');
+        const rows = parseCSV(text);
+        if (!rows.length) throw new Error('CSV vacío');
+        const header = rows[0].map((h) => h.trim());
+        const idx = (name: string) => header.indexOf(name);
+        const iTitle = idx('title');
+        const iStart = idx('startDate');
+        const iTime = idx('timeOfDay');
+        const iFreq = idx('frequency');
+        const iInterval = idx('interval');
+        const iPriority = idx('priority');
+        const iStatus = idx('status');
+        for (let r = 1; r < rows.length; r++) {
+          const row = rows[r];
+          if (!row || row.length === 0) continue;
+          this.reminders.create({
+            title: row[iTitle] || 'Sin título',
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            startDate: row[iStart] || new Date().toISOString(),
+            timeOfDay: row[iTime] || '09:00',
+            recurrence: { frequency: (row[iFreq] as any) || 'daily', interval: Number(row[iInterval] || 1) },
+            leadTimes: this.defaultLeads(),
+            priority: (row[iPriority] as any) || 'med',
+            status: (row[iStatus] as any) || 'active',
+            history: [],
+            ownerId: 'import',
+          } as any);
+        }
+        alert('CSV importado');
+      } catch (e) {
+        const msg = (e as any)?.message || String(e);
+        alert('Error al importar CSV: ' + msg);
+      }
+      input.value = '';
+    };
+    reader.readAsText(file);
+
+    function parseCSV(text: string): string[][] {
+      const rows: string[][] = [];
+      let cur: string[] = [];
+      let field = '';
+      let i = 0; let inQuotes = false; let c = '';
+      while (i < text.length) {
+        c = text[i++];
+        if (inQuotes) {
+          if (c === '"') {
+            if (text[i] === '"') { field += '"'; i++; }
+            else { inQuotes = false; }
+          } else { field += c; }
+        } else {
+          if (c === '"') inQuotes = true;
+          else if (c === ',') { cur.push(field); field = ''; }
+          else if (c === '\n' || c === '\r') {
+            if (c === '\r' && text[i] === '\n') i++;
+            cur.push(field); rows.push(cur); cur = []; field = '';
+          } else { field += c; }
+        }
+      }
+      // push last
+      if (field.length > 0 || cur.length > 0) { cur.push(field); rows.push(cur); }
+      return rows;
+    }
+  }
+}
+
