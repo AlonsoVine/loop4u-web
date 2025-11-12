@@ -1,11 +1,12 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { SettingsService } from './core/services/settings.service';
 
 @Component({
 selector: 'app-root',
 standalone: true,
-imports: [RouterOutlet, RouterLink, RouterLinkActive],
+imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
 template: `
   <div class="min-h-dvh flex flex-col bg-neutral-50 text-neutral-900 dark:bg-neutral-900 dark:text-neutral-100">
     <header class="sticky top-0 z-10 border-b border-neutral-200/60 dark:border-neutral-700/60 bg-white/80 dark:bg-neutral-900/80 backdrop-blur">
@@ -32,13 +33,22 @@ template: `
   <!-- Navbar inferior fuera del contenedor para garantizar que siempre sea fijo al viewport -->
   <nav class="fixed bottom-0 inset-x-0 z-50 border-t border-neutral-200/60 dark:border-neutral-700/60 bg-white/90 dark:bg-neutral-900/90 backdrop-blur">
     <div class="mx-auto max-w-screen-md h-14 grid grid-cols-3 text-sm">
-      <a routerLink="/" routerLinkActive="text-emerald-600" class="flex items-center justify-center gap-2">
+      <a routerLink="/" routerLinkActive="text-emerald-600" [routerLinkActiveOptions]="{ exact: true }"
+         #homeRla="routerLinkActive"
+         [ngClass]="homeRla.isActive ? 'text-emerald-600' : 'text-neutral-600 dark:text-white'"
+         class="flex items-center justify-center gap-2">
         <span>Inicio</span>
       </a>
-      <a routerLink="/calendar" routerLinkActive="text-emerald-600" class="flex items-center justify-center gap-2">
+      <a routerLink="/calendar" routerLinkActive="text-emerald-600"
+         #calRla="routerLinkActive"
+         [ngClass]="calRla.isActive ? 'text-emerald-600' : 'text-neutral-600 dark:text-white'"
+         class="flex items-center justify-center gap-2">
         <span>Calendario</span>
       </a>
-      <a routerLink="/settings" routerLinkActive="text-emerald-600" class="flex items-center justify-center gap-2">
+      <a routerLink="/settings" routerLinkActive="text-emerald-600"
+         #setRla="routerLinkActive"
+         [ngClass]="setRla.isActive ? 'text-emerald-600' : 'text-neutral-600 dark:text-white'"
+         class="flex items-center justify-center gap-2">
         <span>Ajustes</span>
       </a>
     </div>

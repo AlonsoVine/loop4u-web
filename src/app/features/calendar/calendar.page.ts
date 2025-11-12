@@ -49,9 +49,11 @@ interface DayCell {
                 </ng-container>
                 <ng-container *ngIf="items.length > 0">
                   <ng-container *ngFor="let ev of items | slice:0:3">
-                    <div class="relative min-h-0 overflow-hidden rounded border border-neutral-200 dark:border-neutral-700 px-1 pt-1 pl-2 flex items-start gap-1.5">
+                    <div class="relative min-h-0 overflow-hidden rounded border border-neutral-200 dark:border-neutral-700 px-1 pt-1 pl-2 flex items-start gap-1.5"
+                      [class.opacity-60]="ev.r.status==='paused'">
                       <span class="absolute left-0 top-0 bottom-0 w-1 rounded" [ngClass]="bgCategory(ev.r.categoryId)"></span>
                       <span class="absolute right-1 top-1 inline-block h-2.5 w-2.5 rounded-full" [ngClass]="priorityDotClass(ev.r.priority)"></span>
+                      <span *ngIf="ev.r.status==='paused'" class="absolute right-1 bottom-0.5 text-[10px] leading-none text-amber-500">⏸</span>
                       <span class="text-base leading-none">{{ categoryEmoji(ev.r.categoryId) }}</span>
                       <a [routerLink]="['/reminders', ev.r.id, 'edit']" class="truncate hover:underline">{{ ev.r.title }}</a>
                     </div>
@@ -67,19 +69,26 @@ interface DayCell {
       <section class="mt-4" *ngIf="selectedIso() as sel" #dayDetails>
         <h2 class="text-lg font-semibold mb-2">{{ sel | date:'fullDate' }}</h2>
         <ul *ngIf="eventsByDay()[sel.slice(0,10)] as items; else empty" class="divide-y divide-neutral-200/70 dark:divide-neutral-700/60">
-          <li *ngFor="let ev of items" class="py-2 flex items-baseline justify-between relative pl-3">
+          <li *ngFor="let ev of items" class="py-2 relative pl-3"
+              [class.opacity-60]="ev.r.status==='paused'">
             <span class="absolute left-0 top-1 bottom-1 w-1 rounded-full" [ngClass]="bgCategory(ev.r.categoryId)"></span>
-            <span class="text-sm flex items-center gap-2">
-              <span class="text-base leading-none">{{ categoryEmoji(ev.r.categoryId) }}</span>
-              <a [routerLink]="['/reminders', ev.r.id, 'edit']" class="hover:underline">{{ ev.r.title }}</a>
-            </span>
             <span class="absolute right-0 top-0 inline-block h-2.5 w-2.5 rounded-full" [ngClass]="priorityDotClass(ev.r.priority)"></span>
-            <time class="text-xs text-neutral-500">{{ ev.at | date:dateFormat() }}</time>
+            <div class="flex items-baseline justify-between gap-2">
+              <span class="font-medium text-sm md:text-base inline-flex items-center gap-2">
+                <span class="text-base leading-none">{{ categoryEmoji(ev.r.categoryId) }}</span>
+                <a [routerLink]="['/reminders', ev.r.id, 'edit']" class="truncate hover:underline">{{ ev.r.title }}</a>
+                <span *ngIf="ev.r.status==='paused'" class="ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] border border-amber-400 text-amber-600">Pausado</span>
+              </span>
+              <time class="text-xs text-neutral-500">{{ ev.at | date:dateFormat() }}</time>
+            </div>
+            <div class="text-xs text-neutral-500">{{ ev.r.recurrence.frequency }} · {{ ev.r.timeOfDay }}</div>
           </li>
         </ul>
-        <ng-template #empty>
-          <p class="text-sm text-neutral-500">Sin recordatorios este día.</p>
-        </ng-template>
+        <div *ngIf="eventsByDay()[sel.slice(0,10)]?.length" class="mt-2">
+          <a routerLink="/reminders/new" [queryParams]="{ date: sel.slice(0,10) }" class="inline-flex items-center rounded border px-3 py-1.5 text-sm border-emerald-500 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20">Crear recordatorio</a>
+          <div class="h-16"></div>
+        </div>
+        <ng-template #empty><div class="text-sm text-neutral-500"><p>Sin recordatorios este d&iacute;a.</p><div class="mt-2"><a routerLink="/reminders/new" [queryParams]="{ date: sel.slice(0,10) }" class="inline-flex items-center rounded border px-3 py-1.5 text-sm border-emerald-500 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20">Crear recordatorio</a></div></div></ng-template>
       </section>
     </div>
   `

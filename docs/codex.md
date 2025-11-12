@@ -12,6 +12,63 @@ Propósito: mantener, en cada respuesta, un resumen claro de lo hecho, por qué,
 
 ---
 
+## 2025-11-12  Reparación de Ajustes + mejoras de formulario
+
+- Acciones realizadas
+  - Reescribí `src/app/features/settings/settings.page.ts` de forma segura para reparar bloque roto (fin de clase, métodos perdidos) que impedía compilar.
+  - Añadí métodos faltantes usados por la plantilla de Ajustes: `editCategory`, `saveCategory`, `resetCategoryForm`, `clearLocalData`, `clearAllData`, `parseICS`, `splitIcsDate`, y restauré `readTheme`.
+  - Implementé selector de color por cuadrícula para categorías (sin input manual) y añadí `colorOptions` (familias 400/500 + grises). Mantengo `bgColorClass` para sanear clases.
+  - Emoji por defecto para categorías: si está vacío al guardar, uso 🏷️ (también en creación desde importaciones cuando falta categoría).
+  - Normalicé textos sensibles en TS a ASCII (evita mojibake) y usé entidades HTML en la plantilla (`&aacute;`, `&ntilde;`, `&middot;`, etc.).
+  - Formulario de recordatorios (`reminder-form.page.ts`): punto de prioridad dentro del `<select>` (overlay absoluto) y corrección del binding `[class]` concatenando `' pr-8'`. Añadí emoji visible en opciones de categoría.
+
+- Motivo
+  - La plantilla de Ajustes hacía referencia a métodos y estado que no existían (TS2339) y había código incrustado rompiendo el cierre de métodos/clase (TS1128/NG5002). Esto bloqueaba el bundle y ocultaba otros cambios.
+
+- Resultado
+  - Build vuelve a compilar. Ajustes: grid de colores completa; CRUD de categorías funcional; import/export (JSON/CSV/ICS) operativos; secciones visibles incluyendo “Sobre la app”.
+  - Formulario: asterisco único en Título/Fecha/Hora; prioridad con punto dentro del selector; emoji visible en selector de categoría.
+
+- Archivos tocados
+  - `src/app/features/settings/settings.page.ts` (reescritura segura)
+  - `src/app/features/reminders/reminder-form.page.ts` (overlay del punto en select y fix `[class]`)
+  - `tailwind.config.js` (safelist ampliado para colores del selector)
+
+- Notas / riesgos
+  - Mantener entidades HTML en plantillas y ASCII en cadenas TS para evitar regresiones de codificación.
+  - Tras cambios en `tailwind.config.js`, reiniciar dev server para regenerar las clases.
+
+## 2025-11-11  Ajustes: limpieza de acentos y sección “Sobre la app”
+
+- Acciones realizadas
+  - Normalicé todos los textos de la plantilla de Ajustes a UTF-8 seguro usando entidades HTML para caracteres acentuados: `&aacute;`, `&eacute;`, `&iacute;`, `&oacute;`, `&uacute;`, `&ntilde;`, y el separador `&middot;`.
+  - Reemplacé cadenas en código TypeScript (alertas/mensajes) por equivalentes ASCII para evitar mojibake en diálogos del navegador: “Formato invalido”, “Importacion completada”, “CSV vacio”, “Sin titulo”.
+  - Corregí textos rotos en secciones: “Preferencias b&aacute;sicas…”, “Pesta&ntilde;a inicial”, “1 d&iacute;a”, “&Uacute;til para edici&oacute;n en tabla”, “Previsualizaci&oacute;n de importaci&oacute;n”, etc.
+  - En la previsualización de importación reemplacé separadores corruptos por `&middot;` y aseguré “Sin t&iacute;tulo” en la plantilla (y “Sin titulo” en TS).
+  - Restauré placeholders en el formulario de Categorías: `Nombre = "Salud"`, `Color = "emerald-500"`, y dejé `Emoji = ":)"` para evitar problemas de codificación.
+  - Recoloqué “Sobre la app” al final de Ajustes, inmediatamente bajo la sección “Datos”, dentro de una tarjeta con borde. Contiene versión, autor (Alonso Viñé), enlace a portfolio y copyright dinámico `{{ year }}`.
+
+- Racional
+  - Los archivos habían sido guardados con codificación no UTF-8 en algún momento, causando mojibake (p. ej., “Â·”, “Pesta��a”, “d��a”). Usar entidades HTML en plantilla evita regresiones; en cadenas TS optamos por ASCII plano.
+
+- Archivos tocados
+  - `src/app/features/settings/settings.page.ts`
+
+- Notas
+  - Mantener esta estrategia (entidades HTML en templates, ASCII en cadenas TS) al tocar Dashboard/Calendario para garantizar consistencia visual sin depender del editor.
+
+## 2025-11-11  Calendario: CTA al final de la lista
+
+- Acciones realizadas
+  - Añadido el botón "Crear recordatorio" también cuando el día seleccionado tiene elementos, colocándolo al final de la lista, con el mismo estilo del CTA de estado vacío.
+  - El botón pasa `?date=YYYY-MM-DD` para prefijar la fecha en el formulario, igual que en el caso de día sin recordatorios.
+- Decisiones
+  - Mantener este CTA en ambas situaciones (vacío y con elementos) para consistencia y rapidez de uso.
+- Archivos tocados
+  - `src/app/features/calendar/calendar.page.ts`
+- Notas / riesgos
+  - Pendiente limpieza general de codificación en plantillas (acentos y separador `·`), se realizará en una pasada posterior usando entidades HTML o guardando en UTF-8.
+
 ## 2025-11-09  — Dashboard: selector y “Todos”
 
 - Acciones realizadas
@@ -554,3 +611,16 @@ Propósito: mantener, en cada respuesta, un resumen claro de lo hecho, por qué,
   - `src/app/features/dashboard/dashboard.page.ts`
   - `src/app/features/calendar/calendar.page.ts`
   - `src/app/features/reminders/reminder-form.page.ts`
+## 2025-11-10 — Modal descartado + tarjetas en Calendario
+
+- Decisión
+  - Se descarta el modal de detalle tanto en Inicio como en Calendario según preferencia del usuario.
+- Acciones realizadas
+  - Eliminada la lógica de modal y restaurados los enlaces a edición.
+  - En Calendario, las tarjetas de la lista del día seleccionado pasan a usar el mismo estilo que en Dashboard (banda de color, punto de prioridad arriba a la derecha, título con emoji y línea secundaria con frecuencia · hora).
+  - Indicador de “Pausado”:
+    - En las minitarjetas del grid mensual: icono ⏸ en ámbar y ligera atenuación.
+    - En la lista del día: badge “Pausado” (borde/texto ámbar) y opacidad reducida para distinguirlos rápidamente.
+- Archivos tocados
+  - `src/app/features/calendar/calendar.page.ts`
+  - `src/app/features/dashboard/dashboard.page.ts`

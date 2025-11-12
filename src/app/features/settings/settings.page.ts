@@ -1,4 +1,4 @@
-﻿import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SettingsService } from '../../core/services/settings.service';
@@ -34,8 +34,6 @@ type ThemePref = 'system' | 'light' | 'dark';
           </label>
         </div>
       </section>
-
-      
 
       <section class="space-y-3">
         <h2 class="text-lg font-medium">Formato de hora</h2>
@@ -142,7 +140,7 @@ type ThemePref = 'system' | 'light' | 'dark';
             </label>
             <ul class="divide-y divide-neutral-200/70 dark:divide-neutral-700/60">
               <li *ngFor="let it of previewItems() | slice:0:3" class="py-1 flex items-baseline justify-between">
-                <span class="truncate"><strong>{{ it.title || 'Sin titulo' }}</strong> &middot; {{ it.startDate?.slice(0,10) }} {{ it.timeOfDay }}</span>
+                <span class="truncate"><strong>{{ it.title || 'Sin t&iacute;tulo' }}</strong> &middot; {{ it.startDate?.slice(0,10) }} {{ it.timeOfDay }}</span>
                 <span class="text-neutral-500">{{ it.categoryName || it.categoryId || 'Sin categor&iacute;a' }}</span>
               </li>
             </ul>
@@ -179,8 +177,10 @@ type ThemePref = 'system' | 'light' | 'dark';
             <input [(ngModel)]="catForm.name" name="name" class="w-full rounded border px-2 py-1 text-sm bg-white/80 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-700" placeholder="Salud" />
           </div>
           <div>
-            <label class="block text-xs mb-1">Color (Tailwind)</label>
-            <input [(ngModel)]="catForm.color" name="color" class="w-full rounded border px-2 py-1 text-sm bg-white/80 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-700" placeholder="emerald-500" />
+            <label class="block text-xs mb-1">Color</label>
+            <div class="grid grid-cols-8 gap-2 mt-1">
+              <button type="button" *ngFor="let c of colorOptions" [attr.aria-label]="c" [title]="c" (click)="catForm.color=c" class="h-6 w-6 rounded border border-neutral-300 dark:border-neutral-700" [ngClass]="[bgColorClass(c), catForm.color===c ? 'ring-2 ring-emerald-500' : '']"></button>
+            </div>
           </div>
           <div class="flex gap-2">
             <button type="submit" class="inline-flex items-center rounded bg-emerald-600 px-3 py-2 text-white text-sm">{{ catForm.id ? 'Guardar' : 'A&ntilde;adir' }}</button>
@@ -202,17 +202,24 @@ type ThemePref = 'system' | 'light' | 'dark';
       <section class="mt-6 rounded border border-neutral-300 dark:border-neutral-700 p-3 space-y-1">
         <h2 class="text-lg font-medium">Sobre la app</h2>
         <p class="text-sm text-neutral-500">Loop4U &middot; Versi&oacute;n 0.0.0</p>
-        <p class="text-sm text-neutral-500">
-          Autor: Alonso Vi&ntilde;&eacute; &mdash;
-          <a href="https://alonsovine.github.io/portfolio/" target="_blank" rel="noopener noreferrer" class="text-emerald-600 hover:underline">Portfolio</a>
-        </p>
+        <p class="text-sm text-neutral-500">Autor: Alonso Vi&ntilde;&eacute; &mdash; <a href="https://alonsovine.github.io/portfolio/" target="_blank" rel="noopener noreferrer" class="text-emerald-600 hover:underline">Portfolio</a></p>
         <p class="text-xs text-neutral-500">&copy; {{ year }} Alonso Vi&ntilde;&eacute;. Todos los derechos reservados.</p>
       </section>
 
     </div>
-  `
+  `,
 })
 export class SettingsPage {
+  // Paleta de colores para el selector de cuadr&iacute;cula
+  colorOptions = [
+    'emerald-500','teal-500','cyan-500','sky-500','blue-500','indigo-500','violet-500','purple-500',
+    'fuchsia-500','pink-500','rose-500','red-500','orange-500','amber-500','yellow-500','lime-500','green-500',
+    'emerald-400','teal-400','cyan-400','sky-400','blue-400','indigo-400','violet-400','pink-400','rose-400','red-400',
+    'orange-400','amber-400','yellow-400','lime-400','green-400',
+    'slate-500','gray-500','zinc-500','stone-500','neutral-500',
+    'slate-400','gray-400','zinc-400','stone-400','neutral-400',
+  ];
+
   private settings = inject(SettingsService);
   private reminders = inject(RemindersMockService);
   categories = inject(CategoriesService);
@@ -229,6 +236,18 @@ export class SettingsPage {
   previewSource = signal<'json'|'csv'>('json');
   createMissingCategories = signal(true);
 
+  // Estado de formulario de categor&iacute;as
+  catForm: Partial<Category> = {
+    id: undefined,
+    emoji: '🏷️',
+    name: '',
+    color: 'emerald-500',
+    sortOrder: 999,
+    ownerId: 'local',
+    createdAt: '',
+    updatedAt: ''
+  };
+
   setTheme(pref: ThemePref) {
     this.theme.set(pref);
     if (pref === 'system') {
@@ -241,6 +260,11 @@ export class SettingsPage {
       localStorage.setItem('theme', 'dark');
       document.documentElement.classList.add('dark');
     }
+  }
+
+  private readTheme(): ThemePref {
+    const v = localStorage.getItem('theme') as ThemePref | null;
+    return v === 'light' || v === 'dark' ? v : 'system';
   }
 
   setHourFormat(fmt: '24'|'12') { this.settings.setHourFormat(fmt as any); }
@@ -275,7 +299,9 @@ export class SettingsPage {
       const start = new Date(r.nextOccurrence);
       const dtstamp = icsDT(now); const dtstart = icsDT(start); const dtend = icsDT(new Date(start.getTime()+30*60*1000));
       const cat = this.categories.get(r.categoryId || '')?.name || '';
-      lines.push('BEGIN:VEVENT','UID:'+r.id+'-'+start.getTime()+'@loop4u','DTSTAMP:'+dtstamp,'DTSTART:'+dtstart,'DTEND:'+dtend,'SUMMARY:'+icsText(r.title||'Recordatorio')); if(r.notes) lines.push('DESCRIPTION:'+icsText(r.notes)); if(cat) lines.push('CATEGORIES:'+icsText(cat)); lines.push('STATUS:CONFIRMED','END:VEVENT');
+      lines.push('BEGIN:VEVENT','UID:'+r.id+'-'+start.getTime()+'@loop4u','DTSTAMP:'+dtstamp,'DTSTART:'+dtstart,'DTEND:'+dtend,'SUMMARY:'+icsText(r.title||'Recordatorio'));
+      if(r.notes) lines.push('DESCRIPTION:'+icsText(r.notes)); if(cat) lines.push('CATEGORIES:'+icsText(cat));
+      lines.push('STATUS:CONFIRMED','END:VEVENT');
     }
     lines.push('END:VCALENDAR'); const blob=new Blob([lines.join('\r\n')],{type:'text/calendar'}); const url=URL.createObjectURL(blob); this.triggerDownload(url,'loop4u-reminders.ics');
     function pad(n:number){return String(n).padStart(2,'0');}
@@ -299,6 +325,18 @@ export class SettingsPage {
     const reader=new FileReader(); reader.onload=()=>{ try{ const text=String(reader.result??''); const events=this.parseICS(text); let count=0; for(const ev of events){ this.reminders.create({ title:ev.title||'Evento', notes:ev.description||undefined, categoryId:undefined, timezone:Intl.DateTimeFormat().resolvedOptions().timeZone, startDate:ev.startDate, timeOfDay:ev.timeOfDay, recurrence:ev.recurrence, leadTimes:this.defaultLeads(), priority:'none', status:'active', history:[], ownerId:'import', } as any); count++; } alert('Importados desde iCalendar: '+count+' evento(s).'); } catch(e){ alert('Error al importar iCalendar: '+(((e as any)?.message)||String(e))); } input.value=''; }; reader.readAsText(file);
   }
 
+  private parseICS(text: string): { title: string; description?: string; startDate: string; timeOfDay: string; recurrence: { frequency: 'daily'|'weekly'|'monthly'|'yearly'; interval: number } }[] {
+    const lines = text.split(/\r?\n/); const events:any[]=[]; let cur:any=null;
+    for(const raw of lines){ const line=raw.trim(); if(line==='BEGIN:VEVENT'){ cur={}; continue;} if(line==='END:VEVENT'){ if(cur){ events.push(cur); cur=null;} continue;} if(!cur) continue; if(line.startsWith('SUMMARY:')) cur.title=line.slice(8).trim(); else if(line.startsWith('DESCRIPTION:')) cur.description=line.slice(12).trim(); else if(line.startsWith('DTSTART')){ const dt=line.split(':')[1]||''; const {date,time}=this.splitIcsDate(dt); cur.startDate=date; cur.timeOfDay=time; } else if(line.startsWith('RRULE:')){ const rule=line.slice(6); const m=/FREQ=([A-Z]+);?INTERVAL=?(\d+)?/.exec(rule); const freq=(m?.[1]||'YEARLY').toLowerCase(); const interval=Number(m?.[2]||1); cur.recurrence={ frequency: (['daily','weekly','monthly','yearly'].includes(freq)?freq:'yearly') as any, interval }; } }
+    for(const ev of events){ ev.title=ev.title||'Evento'; ev.recurrence=ev.recurrence||{frequency:'yearly',interval:1}; if(!ev.startDate||!ev.timeOfDay){ const now=new Date(); ev.startDate=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate())).toISOString(); ev.timeOfDay='09:00'; } } return events as any[];
+  }
+
+  private splitIcsDate(dt: string): { date: string; time: string } { const y=Number(dt.slice(0,4)); const m=Number(dt.slice(4,6))-1; const d=Number(dt.slice(6,8)); let hh=9, mm=0; if(dt.length>=15){ hh=Number(dt.slice(9,11)); mm=Number(dt.slice(11,13)); } const date=new Date(Date.UTC(y,m,d)); const dateIso=date.toISOString(); const time=`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`; return { date: dateIso, time }; }
+
+  // Datos: borrado local
+  clearLocalData() { localStorage.removeItem('loop4u.reminders'); alert('Recordatorios eliminados del almacenamiento local.'); }
+  clearAllData() { localStorage.clear(); alert('Todos los datos locales eliminados.'); }
+
   // Preview (advanced)
   onImportJSONPreview(event: Event) {
     const input = event.target as HTMLInputElement | null; if(!input) return; const file = input.files && input.files[0]; if(!file) return;
@@ -314,50 +352,42 @@ export class SettingsPage {
   cancelPreview() { this.previewOpen.set(false); this.previewItems.set([]); }
   applyPreviewImport() {
     const items=this.previewItems(); const createMissing=this.createMissingCategories(); const cats=this.categories.list(); const findByName=(name?:string)=>name?cats.find(c=>(c.name||'').toLowerCase()===(name||'').toLowerCase()):undefined;
-    for(const r of items){ let categoryId:string|undefined=r.categoryId; if(!categoryId&&r.categoryName){ const found=findByName(r.categoryName); if(found) categoryId=found.id; else if(createMissing){ const created=this.categories.create({ name:r.categoryName, emoji: '🏷️', color:'neutral-400', sortOrder:Date.now(), ownerId:'local' }); categoryId=created.id; } }
-      this.reminders.create({ title:r.title, notes:r.notes, categoryId, timezone:r.timezone, startDate:r.startDate, timeOfDay:r.timeOfDay, recurrence:r.recurrence, leadTimes:r.leadTimes, priority:r.priority, status:r.status, lastCompletedAt:r.lastCompletedAt, history:r.history, ownerId:r.ownerId } as any);
-    }
+    for(const r of items as any[]){ let categoryId:string|undefined=r.categoryId; if(!categoryId&&r.categoryName){ const found=findByName(r.categoryName); if(found) categoryId=found.id; else if(createMissing){ const created=this.categories.create({ name:r.categoryName, emoji:'🏷️', color:'neutral-400', sortOrder:Date.now(), ownerId:'local' }); categoryId=created.id; } } this.reminders.create({ title:r.title||'Sin titulo', notes:r.notes||undefined, categoryId, timezone:r.timezone||Intl.DateTimeFormat().resolvedOptions().timeZone, startDate:r.startDate, timeOfDay:r.timeOfDay, recurrence:r.recurrence, leadTimes:this.defaultLeads(), priority:r.priority||'none', status:r.status||'active', history:[], ownerId:'import' } as any); }
     this.cancelPreview(); alert('Importacion completada: '+items.length+' elemento(s)');
   }
 
-  clearLocalData() { localStorage.removeItem('loop4u.reminders'); alert('Recordatorios eliminados del almacenamiento local.'); }
-  clearAllData() { localStorage.clear(); alert('Todos los datos locales eliminados.'); }
+  deleteCategory(c: Category) { const ok = confirm('Eliminar la categoria "' + c.name + '"?'); if (ok) this.categories.delete(c.id); }
 
   bgColorClass(c: string): string { const safe=(c||'').replace(/[^a-z0-9-]/gi,''); return 'bg-'+(safe||'neutral-400'); }
 
-  private readTheme(): ThemePref { const v=localStorage.getItem('theme') as ThemePref | null; return v==='light'||v==='dark'?v:'system'; }
-
-  private parseICS(text: string): { title: string; description?: string; startDate: string; timeOfDay: string; recurrence: { frequency: 'daily'|'weekly'|'monthly'|'yearly'; interval: number } }[] {
-    const lines=text.split(/\r?\n/); const events:any[]=[]; let cur:any=null; for(let raw of lines){ const line=raw.trim(); if(line==='BEGIN:VEVENT'){ cur={}; continue;} if(line==='END:VEVENT'){ if(cur){ events.push(cur); cur=null;} continue;} if(!cur) continue; if(line.startsWith('SUMMARY:')) cur.title=line.slice(8).trim(); else if(line.startsWith('DESCRIPTION:')) cur.description=line.slice(12).trim(); else if(line.startsWith('DTSTART')){ const dt=line.split(':')[1]||''; const {date,time}=this.splitIcsDate(dt); cur.startDate=date; cur.timeOfDay=time; } else if(line.startsWith('RRULE:')){ const rule=line.slice(6); const m=/FREQ=([A-Z]+);?INTERVAL=?(\d+)?/.exec(rule); const freq=(m?.[1]||'YEARLY').toLowerCase(); const interval=Number(m?.[2]||1); cur.recurrence={ frequency: (['daily','weekly','monthly','yearly'].includes(freq)?freq:'yearly') as any, interval }; } }
-    for(const ev of events){ ev.title=ev.title||'Evento'; ev.recurrence=ev.recurrence||{frequency:'yearly',interval:1}; if(!ev.startDate||!ev.timeOfDay){ const now=new Date(); ev.startDate=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate())).toISOString(); ev.timeOfDay='09:00'; } } return events as any[];
+  // CRUD de Categorías (form inline)
+  editCategory(c: Category) {
+    this.catForm = { ...c };
   }
 
-  private splitIcsDate(dt: string): { date: string; time: string } { const y=Number(dt.slice(0,4)); const m=Number(dt.slice(4,6))-1; const d=Number(dt.slice(6,8)); let hh=9, mm=0; if(dt.length>=15){ hh=Number(dt.slice(9,11)); mm=Number(dt.slice(11,13)); } const date=new Date(Date.UTC(y,m,d)); const dateIso=date.toISOString(); const time=`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`; return { date: dateIso, time }; }
+  resetCategoryForm() {
+    this.catForm = {
+      id: undefined,
+      emoji: '🏷️',
+      name: '',
+      color: 'emerald-500',
+      sortOrder: 999,
+      ownerId: 'local',
+      createdAt: '',
+      updatedAt: ''
+    };
+  }
 
-  // GestiÃ³n de Categor&iacute;as (form inline)
-  catForm: Partial<Category> = { id: undefined, emoji: '🏷️', name: '', color: 'emerald-500', sortOrder: 999, ownerId: 'local', createdAt: '', updatedAt: '' };
-
-  editCategory(c: Category) { this.catForm = { ...c }; }
-  resetCategoryForm() { this.catForm = { id: undefined, emoji: '🏷️', name: '', color: 'emerald-500', sortOrder: 999, ownerId: 'local', createdAt: '', updatedAt: '' }; }
   saveCategory() {
-    if (!this.catForm.name || !this.catForm.emoji || !this.catForm.color) return;
+    const name = (this.catForm.name || '').trim();
+    const color = (this.catForm.color || '').trim();
+    const emoji = (this.catForm.emoji && String(this.catForm.emoji).trim().length>0) ? this.catForm.emoji! : '🏷️';
+    if (!name || !color) return;
     if (this.catForm.id) {
-      this.categories.update(this.catForm.id, { name: this.catForm.name!, emoji: this.catForm.emoji!, color: this.catForm.color! });
+      this.categories.update(this.catForm.id, { name, color, emoji });
     } else {
-      this.categories.create({ name: this.catForm.name!, emoji: this.catForm.emoji!, color: this.catForm.color!, sortOrder: Date.now(), ownerId: 'local' });
+      this.categories.create({ name, color, emoji, sortOrder: Date.now(), ownerId: 'local' });
     }
     this.resetCategoryForm();
   }
-  deleteCategory(c: Category) { const ok = confirm('Â¿Eliminar la categoria "' + c.name + '"?'); if (ok) this.categories.delete(c.id); }
 }
-
-
-
-
-
-
-
-
-
-
-
