@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+﻿import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SettingsService } from '../../core/services/settings.service';
@@ -17,7 +17,7 @@ type ThemePref = 'system' | 'light' | 'dark';
     <div class="p-4 space-y-6 max-w-screen-md mx-auto">
       <header>
         <h1 class="text-xl font-semibold">Ajustes</h1>
-        <p class="text-sm text-neutral-500">Preferencias básicas y acerca de la app</p>
+        <p class="text-sm text-neutral-500">Preferencias b&aacute;sicas y acerca de la app</p>
       </header>
 
       <section class="space-y-3">
@@ -35,6 +35,8 @@ type ThemePref = 'system' | 'light' | 'dark';
         </div>
       </section>
 
+      
+
       <section class="space-y-3">
         <h2 class="text-lg font-medium">Formato de hora</h2>
         <div class="flex gap-3 text-sm">
@@ -48,7 +50,7 @@ type ThemePref = 'system' | 'light' | 'dark';
       </section>
 
       <section class="space-y-3">
-        <h2 class="text-lg font-medium">Pestaña inicial</h2>
+        <h2 class="text-lg font-medium">Pesta&ntilde;a inicial</h2>
         <div class="flex gap-3 text-sm">
           <label class="inline-flex items-center gap-2">
             <input type="radio" name="starttab" value="home" [checked]="initialTab()==='home'" (change)="setInitialTab('home')" /> Inicio (por defecto)
@@ -69,7 +71,7 @@ type ThemePref = 'system' | 'light' | 'dark';
             <input type="checkbox" [checked]="hasLead('week',1)" (change)="toggleLeadTime({unit:'week', value:1})" /> 1 semana
           </label>
           <label class="inline-flex items-center gap-2">
-            <input type="checkbox" [checked]="hasLead('day',1)" (change)="toggleLeadTime({unit:'day', value:1})" /> 1 día
+            <input type="checkbox" [checked]="hasLead('day',1)" (change)="toggleLeadTime({unit:'day', value:1})" /> 1 d&iacute;a
           </label>
           <label class="inline-flex items-center gap-2">
             <input type="checkbox" [checked]="hasLead('hour',1)" (change)="toggleLeadTime({unit:'hour', value:1})" /> 1 hora
@@ -101,7 +103,7 @@ type ThemePref = 'system' | 'light' | 'dark';
               <input type="file" accept="text/csv,.csv" class="hidden" (change)="onImportCSV($event)" />
             </label>
           </div>
-          <p class="text-xs text-neutral-500">CSV es compatible con Excel/Sheets. Útil para edición en tabla.</p>
+          <p class="text-xs text-neutral-500">CSV es compatible con Excel/Sheets. &Uacute;til para edici&oacute;n en tabla.</p>
         </div>
 
         <!-- iCalendar -->
@@ -113,7 +115,7 @@ type ThemePref = 'system' | 'light' | 'dark';
               <input type="file" accept="text/calendar,.ics" class="hidden" (change)="onImportICS($event)" />
             </label>
           </div>
-          <p class="text-xs text-neutral-500">iCalendar se integra con Apple/Google/Outlook. Importa eventos básicos a recordatorios.</p>
+          <p class="text-xs text-neutral-500">iCalendar se integra con Apple/Google/Outlook. Importa eventos b&aacute;sicos a recordatorios.</p>
         </div>
 
         <!-- Opciones avanzadas (preview) -->
@@ -131,21 +133,21 @@ type ThemePref = 'system' | 'light' | 'dark';
           </div>
           <div *ngIf="previewOpen()" class="mt-2 rounded border border-neutral-300 dark:border-neutral-700 p-3 text-sm">
             <div class="flex items-center justify-between mb-2">
-              <strong>Previsualización de importación</strong>
+              <strong>Previsualizaci&oacute;n de importaci&oacute;n</strong>
               <button type="button" class="underline" (click)="cancelPreview()">Cancelar</button>
             </div>
-            <p class="text-neutral-500 mb-2">Origen: {{ previewSource() | uppercase }} — {{ previewItems().length }} elemento(s)</p>
+            <p class="text-neutral-500 mb-2">Origen: {{ previewSource() | uppercase }} &middot; {{ previewItems().length }} elemento(s)</p>
             <label class="inline-flex items-center gap-2 mb-2">
-              <input type="checkbox" [checked]="createMissingCategories()" (change)="toggleCreateMissing($any($event.target).checked)" /> Crear categorías que falten (según nombre)
+              <input type="checkbox" [checked]="createMissingCategories()" (change)="toggleCreateMissing($any($event.target).checked)" /> Crear categor&iacute;as que falten (seg&uacute;n nombre)
             </label>
             <ul class="divide-y divide-neutral-200/70 dark:divide-neutral-700/60">
               <li *ngFor="let it of previewItems() | slice:0:3" class="py-1 flex items-baseline justify-between">
-                <span class="truncate"><strong>{{ it.title || 'Sin título' }}</strong> · {{ it.startDate?.slice(0,10) }} {{ it.timeOfDay }}</span>
-                <span class="text-neutral-500">{{ it.categoryName || it.categoryId || 'Sin categoría' }}</span>
+                <span class="truncate"><strong>{{ it.title || 'Sin titulo' }}</strong> &middot; {{ it.startDate?.slice(0,10) }} {{ it.timeOfDay }}</span>
+                <span class="text-neutral-500">{{ it.categoryName || it.categoryId || 'Sin categor&iacute;a' }}</span>
               </li>
             </ul>
             <div class="mt-3 flex gap-2">
-              <button type="button" class="inline-flex items-center rounded bg-emerald-600 px-3 py-2 text-white" (click)="applyPreviewImport()">Aplicar importación</button>
+              <button type="button" class="inline-flex items-center rounded bg-emerald-600 px-3 py-2 text-white" (click)="applyPreviewImport()">Aplicar importaci&oacute;n</button>
               <button type="button" class="inline-flex items-center rounded border px-3 py-2 border-neutral-300 dark:border-neutral-700" (click)="cancelPreview()">Cancelar</button>
             </div>
           </div>
@@ -153,7 +155,7 @@ type ThemePref = 'system' | 'light' | 'dark';
       </section>
 
       <section class="space-y-3">
-        <h2 class="text-lg font-medium">Categorías</h2>
+        <h2 class="text-lg font-medium">Categor&iacute;as</h2>
         <ul class="divide-y divide-neutral-200/70 dark:divide-neutral-700/60 text-sm">
           <li *ngFor="let c of categories.list()" class="py-2 flex items-center justify-between">
             <div class="flex items-center gap-2">
@@ -181,7 +183,7 @@ type ThemePref = 'system' | 'light' | 'dark';
             <input [(ngModel)]="catForm.color" name="color" class="w-full rounded border px-2 py-1 text-sm bg-white/80 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-700" placeholder="emerald-500" />
           </div>
           <div class="flex gap-2">
-            <button type="submit" class="inline-flex items-center rounded bg-emerald-600 px-3 py-2 text-white text-sm">{{ catForm.id ? 'Guardar' : 'Añadir' }}</button>
+            <button type="submit" class="inline-flex items-center rounded bg-emerald-600 px-3 py-2 text-white text-sm">{{ catForm.id ? 'Guardar' : 'A&ntilde;adir' }}</button>
             <button type="button" class="inline-flex items-center rounded border px-3 py-2 text-sm border-neutral-300 dark:border-neutral-700" (click)="resetCategoryForm()" *ngIf="catForm.id">Cancelar</button>
           </div>
         </form>
@@ -193,8 +195,20 @@ type ThemePref = 'system' | 'light' | 'dark';
           <button type="button" (click)="clearLocalData()" class="inline-flex items-center rounded border px-3 py-2 text-sm border-neutral-300 dark:border-neutral-700">Borrar datos de recordatorios</button>
           <button type="button" (click)="clearAllData()" class="inline-flex items-center rounded border px-3 py-2 text-sm border-red-400 text-red-600 dark:border-red-500">Borrar TODOS los datos</button>
         </div>
-        <p class="text-xs text-neutral-500">Elimina datos locales de pruebas. La opción en rojo borra todas las preferencias (tema, recordatorios, etc.).</p>
+        <p class="text-xs text-neutral-500">Elimina datos locales de pruebas. La opci&oacute;n en rojo borra todas las preferencias (tema, recordatorios, etc.).</p>
       </section>
+
+      <!-- Sobre la app (al final) -->
+      <section class="mt-6 rounded border border-neutral-300 dark:border-neutral-700 p-3 space-y-1">
+        <h2 class="text-lg font-medium">Sobre la app</h2>
+        <p class="text-sm text-neutral-500">Loop4U &middot; Versi&oacute;n 0.0.0</p>
+        <p class="text-sm text-neutral-500">
+          Autor: Alonso Vi&ntilde;&eacute; &mdash;
+          <a href="https://alonsovine.github.io/portfolio/" target="_blank" rel="noopener noreferrer" class="text-emerald-600 hover:underline">Portfolio</a>
+        </p>
+        <p class="text-xs text-neutral-500">&copy; {{ year }} Alonso Vi&ntilde;&eacute;. Todos los derechos reservados.</p>
+      </section>
+
     </div>
   `
 })
@@ -202,6 +216,7 @@ export class SettingsPage {
   private settings = inject(SettingsService);
   private reminders = inject(RemindersMockService);
   categories = inject(CategoriesService);
+  year = new Date().getFullYear();
 
   theme = signal<ThemePref>(this.readTheme());
   hourFormat = computed(() => this.settings.hourFormat());
@@ -270,12 +285,12 @@ export class SettingsPage {
 
   onImportJSON(event: Event) {
     const input = event.target as HTMLInputElement | null; if(!input) return; const file = input.files && input.files[0]; if(!file) return;
-    const reader=new FileReader(); reader.onload=()=>{ try{ const parsed=JSON.parse(String(reader.result)); if(!Array.isArray(parsed)) throw new Error('Formato inválido'); for(const r of parsed){ const leads:Array<LeadTime>=Array.isArray(r.leadTimes)?r.leadTimes:this.defaultLeads(); this.reminders.create({ title:r.title??'Sin título', notes:r.notes??undefined, categoryId:r.categoryId??undefined, timezone:r.timezone??Intl.DateTimeFormat().resolvedOptions().timeZone, startDate:r.startDate??new Date().toISOString(), timeOfDay:r.timeOfDay??'09:00', recurrence:r.recurrence??{frequency:'daily',interval:1}, leadTimes:leads, priority:r.priority??'none', status:r.status??'active', lastCompletedAt:r.lastCompletedAt??undefined, history:Array.isArray(r.history)?r.history:[], ownerId:r.ownerId??'import', } as any); } alert('Importación completada'); } catch(e){ alert('Error al importar JSON: '+(((e as any)?.message)||String(e))); } input.value=''; }; reader.readAsText(file);
+    const reader=new FileReader(); reader.onload=()=>{ try{ const parsed=JSON.parse(String(reader.result)); if(!Array.isArray(parsed)) throw new Error('Formato invalido'); for(const r of parsed){ const leads:Array<LeadTime>=Array.isArray(r.leadTimes)?r.leadTimes:this.defaultLeads(); this.reminders.create({ title:r.title??'Sin titulo', notes:r.notes??undefined, categoryId:r.categoryId??undefined, timezone:r.timezone??Intl.DateTimeFormat().resolvedOptions().timeZone, startDate:r.startDate??new Date().toISOString(), timeOfDay:r.timeOfDay??'09:00', recurrence:r.recurrence??{frequency:'daily',interval:1}, leadTimes:leads, priority:r.priority??'none', status:r.status??'active', lastCompletedAt:r.lastCompletedAt??undefined, history:Array.isArray(r.history)?r.history:[], ownerId:r.ownerId??'import', } as any); } alert('Importacion completada'); } catch(e){ alert('Error al importar JSON: '+(((e as any)?.message)||String(e))); } input.value=''; }; reader.readAsText(file);
   }
 
   onImportCSV(event: Event) {
     const input = event.target as HTMLInputElement | null; if(!input) return; const file = input.files && input.files[0]; if(!file) return;
-    const reader=new FileReader(); reader.onload=()=>{ try{ const text=String(reader.result??''); const rows=parseCSV(text); if(!rows.length) throw new Error('CSV vacío'); const header=rows[0].map(h=>h.trim()); const idx=(n:string)=>header.indexOf(n); const iTitle=idx('title'), iStart=idx('startDate'), iTime=idx('timeOfDay'), iFreq=idx('frequency'), iInterval=idx('interval'), iPriority=idx('priority'), iStatus=idx('status'); for(let r=1;r<rows.length;r++){ const row=rows[r]; if(!row||row.length===0) continue; this.reminders.create({ title:row[iTitle]||'Sin título', timezone:Intl.DateTimeFormat().resolvedOptions().timeZone, startDate:row[iStart]||new Date().toISOString(), timeOfDay:row[iTime]||'09:00', recurrence:{frequency:(row[iFreq] as any)||'daily', interval:Number(row[iInterval]||1)}, leadTimes:this.defaultLeads(), priority:(row[iPriority] as any)||'none', status:(row[iStatus] as any)||'active', history:[], ownerId:'import', } as any);} alert('CSV importado'); } catch(e){ alert('Error al importar CSV: '+(((e as any)?.message)||String(e))); } input.value=''; }; reader.readAsText(file);
+    const reader=new FileReader(); reader.onload=()=>{ try{ const text=String(reader.result??''); const rows=parseCSV(text); if(!rows.length) throw new Error('CSV vacio'); const header=rows[0].map(h=>h.trim()); const idx=(n:string)=>header.indexOf(n); const iTitle=idx('title'), iStart=idx('startDate'), iTime=idx('timeOfDay'), iFreq=idx('frequency'), iInterval=idx('interval'), iPriority=idx('priority'), iStatus=idx('status'); for(let r=1;r<rows.length;r++){ const row=rows[r]; if(!row||row.length===0) continue; this.reminders.create({ title:row[iTitle]||'Sin titulo', timezone:Intl.DateTimeFormat().resolvedOptions().timeZone, startDate:row[iStart]||new Date().toISOString(), timeOfDay:row[iTime]||'09:00', recurrence:{frequency:(row[iFreq] as any)||'daily', interval:Number(row[iInterval]||1)}, leadTimes:this.defaultLeads(), priority:(row[iPriority] as any)||'none', status:(row[iStatus] as any)||'active', history:[], ownerId:'import', } as any);} alert('CSV importado'); } catch(e){ alert('Error al importar CSV: '+(((e as any)?.message)||String(e))); } input.value=''; }; reader.readAsText(file);
     function parseCSV(text:string){ const rows:string[][]=[]; let cur:string[]=[]; let field=''; let i=0; let inQ=false; while(i<text.length){ const c=text[i++]; if(inQ){ if(c==='"'){ if(text[i]==='"'){ field+='"'; i++; } else inQ=false; } else field+=c; } else { if(c==='"') inQ=true; else if(c===','){ cur.push(field); field=''; } else if(c==='\n'||c==='\r'){ if(c==='\r'&&text[i]=='\n') i++; cur.push(field); rows.push(cur); cur=[]; field=''; } else field+=c; } } if(field.length>0||cur.length>0){ cur.push(field); rows.push(cur);} return rows; }
   }
 
@@ -287,22 +302,22 @@ export class SettingsPage {
   // Preview (advanced)
   onImportJSONPreview(event: Event) {
     const input = event.target as HTMLInputElement | null; if(!input) return; const file = input.files && input.files[0]; if(!file) return;
-    const reader=new FileReader(); reader.onload=()=>{ try{ const parsed=JSON.parse(String(reader.result??'[]')); if(!Array.isArray(parsed)) throw new Error('Formato inválido'); const items=parsed.map((r:any)=>({ title:r.title??'Sin título', notes:r.notes??undefined, categoryId:r.categoryId??undefined, categoryName:r.categoryName??undefined, timezone:r.timezone??Intl.DateTimeFormat().resolvedOptions().timeZone, startDate:r.startDate??new Date().toISOString(), timeOfDay:r.timeOfDay??'09:00', recurrence:r.recurrence??{frequency:'daily',interval:1}, leadTimes:Array.isArray(r.leadTimes)?r.leadTimes:this.defaultLeads(), priority:r.priority??'none', status:r.status??'active', lastCompletedAt:r.lastCompletedAt??undefined, history:Array.isArray(r.history)?r.history:[], ownerId:r.ownerId??'import', })); this.previewItems.set(items); this.previewSource.set('json'); this.previewOpen.set(true);} catch(e){ alert('Error al leer JSON: '+(((e as any)?.message)||String(e))); } input.value=''; }; reader.readAsText(file);
+    const reader=new FileReader(); reader.onload=()=>{ try{ const parsed=JSON.parse(String(reader.result??'[]')); if(!Array.isArray(parsed)) throw new Error('Formato invalido'); const items=parsed.map((r:any)=>({ title:r.title??'Sin titulo', notes:r.notes??undefined, categoryId:r.categoryId??undefined, categoryName:r.categoryName??undefined, timezone:r.timezone??Intl.DateTimeFormat().resolvedOptions().timeZone, startDate:r.startDate??new Date().toISOString(), timeOfDay:r.timeOfDay??'09:00', recurrence:r.recurrence??{frequency:'daily',interval:1}, leadTimes:Array.isArray(r.leadTimes)?r.leadTimes:this.defaultLeads(), priority:r.priority??'none', status:r.status??'active', lastCompletedAt:r.lastCompletedAt??undefined, history:Array.isArray(r.history)?r.history:[], ownerId:r.ownerId??'import', })); this.previewItems.set(items); this.previewSource.set('json'); this.previewOpen.set(true);} catch(e){ alert('Error al leer JSON: '+(((e as any)?.message)||String(e))); } input.value=''; }; reader.readAsText(file);
   }
 
   onImportCSVPreview(event: Event) {
     const input = event.target as HTMLInputElement | null; if(!input) return; const file = input.files && input.files[0]; if(!file) return;
-    const reader=new FileReader(); reader.onload=()=>{ try{ const text=String(reader.result??''); const rows=text.split(/\r?\n/).map(l=>l.split(',')); if(!rows.length) throw new Error('CSV vacío'); const header=rows[0].map(h=>h.trim()); const idx=(n:string)=>header.indexOf(n); const iTitle=idx('title'), iStart=idx('startDate'), iTime=idx('timeOfDay'), iFreq=idx('frequency'), iInterval=idx('interval'), iPriority=idx('priority'), iStatus=idx('status'); const items:any[]=[]; for(let r=1;r<rows.length;r++){ const row=rows[r]; if(!row||row.length===0) continue; items.push({ title:row[iTitle]||'Sin título', timezone:Intl.DateTimeFormat().resolvedOptions().timeZone, startDate:row[iStart]||new Date().toISOString(), timeOfDay:row[iTime]||'09:00', recurrence:{frequency:(row[iFreq] as any)||'daily', interval:Number(row[iInterval]||1)}, leadTimes:this.defaultLeads(), priority:(row[iPriority] as any)||'none', status:(row[iStatus] as any)||'active', history:[], ownerId:'import'}); } this.previewItems.set(items); this.previewSource.set('csv'); this.previewOpen.set(true);} catch(e){ alert('Error al leer CSV: '+(((e as any)?.message)||String(e))); } input.value=''; }; reader.readAsText(file);
+    const reader=new FileReader(); reader.onload=()=>{ try{ const text=String(reader.result??''); const rows=text.split(/\r?\n/).map(l=>l.split(',')); if(!rows.length) throw new Error('CSV vacio'); const header=rows[0].map(h=>h.trim()); const idx=(n:string)=>header.indexOf(n); const iTitle=idx('title'), iStart=idx('startDate'), iTime=idx('timeOfDay'), iFreq=idx('frequency'), iInterval=idx('interval'), iPriority=idx('priority'), iStatus=idx('status'); const items:any[]=[]; for(let r=1;r<rows.length;r++){ const row=rows[r]; if(!row||row.length===0) continue; items.push({ title:row[iTitle]||'Sin titulo', timezone:Intl.DateTimeFormat().resolvedOptions().timeZone, startDate:row[iStart]||new Date().toISOString(), timeOfDay:row[iTime]||'09:00', recurrence:{frequency:(row[iFreq] as any)||'daily', interval:Number(row[iInterval]||1)}, leadTimes:this.defaultLeads(), priority:(row[iPriority] as any)||'none', status:(row[iStatus] as any)||'active', history:[], ownerId:'import'}); } this.previewItems.set(items); this.previewSource.set('csv'); this.previewOpen.set(true);} catch(e){ alert('Error al leer CSV: '+(((e as any)?.message)||String(e))); } input.value=''; }; reader.readAsText(file);
   }
 
   toggleCreateMissing(v: boolean) { this.createMissingCategories.set(!!v); }
   cancelPreview() { this.previewOpen.set(false); this.previewItems.set([]); }
   applyPreviewImport() {
     const items=this.previewItems(); const createMissing=this.createMissingCategories(); const cats=this.categories.list(); const findByName=(name?:string)=>name?cats.find(c=>(c.name||'').toLowerCase()===(name||'').toLowerCase()):undefined;
-    for(const r of items){ let categoryId:string|undefined=r.categoryId; if(!categoryId&&r.categoryName){ const found=findByName(r.categoryName); if(found) categoryId=found.id; else if(createMissing){ const created=this.categories.create({ name:r.categoryName, emoji:'🏷️', color:'neutral-400', sortOrder:Date.now(), ownerId:'local' }); categoryId=created.id; } }
+    for(const r of items){ let categoryId:string|undefined=r.categoryId; if(!categoryId&&r.categoryName){ const found=findByName(r.categoryName); if(found) categoryId=found.id; else if(createMissing){ const created=this.categories.create({ name:r.categoryName, emoji: '🏷️', color:'neutral-400', sortOrder:Date.now(), ownerId:'local' }); categoryId=created.id; } }
       this.reminders.create({ title:r.title, notes:r.notes, categoryId, timezone:r.timezone, startDate:r.startDate, timeOfDay:r.timeOfDay, recurrence:r.recurrence, leadTimes:r.leadTimes, priority:r.priority, status:r.status, lastCompletedAt:r.lastCompletedAt, history:r.history, ownerId:r.ownerId } as any);
     }
-    this.cancelPreview(); alert('Importación completada: '+items.length+' elemento(s)');
+    this.cancelPreview(); alert('Importacion completada: '+items.length+' elemento(s)');
   }
 
   clearLocalData() { localStorage.removeItem('loop4u.reminders'); alert('Recordatorios eliminados del almacenamiento local.'); }
@@ -319,7 +334,7 @@ export class SettingsPage {
 
   private splitIcsDate(dt: string): { date: string; time: string } { const y=Number(dt.slice(0,4)); const m=Number(dt.slice(4,6))-1; const d=Number(dt.slice(6,8)); let hh=9, mm=0; if(dt.length>=15){ hh=Number(dt.slice(9,11)); mm=Number(dt.slice(11,13)); } const date=new Date(Date.UTC(y,m,d)); const dateIso=date.toISOString(); const time=`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`; return { date: dateIso, time }; }
 
-  // Gestión de categorías (form inline)
+  // GestiÃ³n de Categor&iacute;as (form inline)
   catForm: Partial<Category> = { id: undefined, emoji: '🏷️', name: '', color: 'emerald-500', sortOrder: 999, ownerId: 'local', createdAt: '', updatedAt: '' };
 
   editCategory(c: Category) { this.catForm = { ...c }; }
@@ -333,5 +348,16 @@ export class SettingsPage {
     }
     this.resetCategoryForm();
   }
-  deleteCategory(c: Category) { const ok = confirm('¿Eliminar la categoría "' + c.name + '"?'); if (ok) this.categories.delete(c.id); }
+  deleteCategory(c: Category) { const ok = confirm('Â¿Eliminar la categoria "' + c.name + '"?'); if (ok) this.categories.delete(c.id); }
 }
+
+
+
+
+
+
+
+
+
+
+
