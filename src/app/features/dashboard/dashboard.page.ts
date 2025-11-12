@@ -1,7 +1,8 @@
-import { Component, computed, inject, signal } from '@angular/core';
+﻿import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { RemindersMockService } from '../reminders/reminders.mock.service';
+import { formatRecurrenceLabel } from '../../core/utils/recurrence.util';
 import { SettingsService } from '../../core/services/settings.service';
 import { CategoriesService } from '../../core/services/categories.service';
 
@@ -55,7 +56,7 @@ import { CategoriesService } from '../../core/services/categories.service';
         </select>
       </div>
 
-      <!-- Próximos -->
+      <!-- PrÃ³ximos -->
       <section *ngIf="activeTab() === 'upcoming'">
         <div class="flex items-center justify-between mt-6 mb-3">
           <h2 class="text-lg md:text-xl font-semibold">Próximos</h2>
@@ -85,13 +86,13 @@ import { CategoriesService } from '../../core/services/categories.service';
               }}</time>
             </div>
             <div class="text-xs text-neutral-500">
-              {{ r.recurrence.frequency }} · {{ r.timeOfDay }}
+              {{ recurrenceLabel(r.recurrence) }} &middot; {{ r.timeOfDay }}
             </div>
           </li>
         </ul>
       </section>
 
-      <!-- Categorías -->
+      <!-- CategorÃ­as -->
       <section *ngIf="activeTab() === 'categories'">
         <h2 class="text-lg md:text-xl font-semibold mt-6 mb-3">Categorías</h2>
         <div class="flex flex-wrap gap-2 mb-4">
@@ -107,7 +108,7 @@ import { CategoriesService } from '../../core/services/categories.service';
           </button>
         </div>
         <div *ngIf="bySelectedCategory().length === 0" class="text-sm text-neutral-500">
-          Sin elementos para esta categoría.
+          Sin elementos para esta categorí­a.
         </div>
         <ul class="divide-y divide-neutral-200/70 dark:divide-neutral-700/60">
           <li *ngFor="let r of bySelectedCategory()" class="py-2 relative pl-3">
@@ -131,7 +132,7 @@ import { CategoriesService } from '../../core/services/categories.service';
               }}</time>
             </div>
             <div class="text-xs text-neutral-500">
-              {{ r.recurrence.frequency }} · {{ r.timeOfDay }}
+              {{ recurrenceLabel(r.recurrence) }} &middot; {{ r.timeOfDay }}
             </div>
           </li>
         </ul>
@@ -170,7 +171,7 @@ import { CategoriesService } from '../../core/services/categories.service';
               <time class="text-xs text-neutral-500">{{ r.updatedAt | date : dateFormat() }}</time>
             </div>
             <div class="text-xs text-neutral-500">
-              {{ r.recurrence.frequency }} · {{ r.timeOfDay }}
+              {{ recurrenceLabel(r.recurrence) }} &middot; {{ r.timeOfDay }}
             </div>
           </li>
         </ul>
@@ -202,7 +203,7 @@ import { CategoriesService } from '../../core/services/categories.service';
               }}</time>
             </div>
             <div class="text-xs text-neutral-500">
-              {{ r.recurrence.frequency }} · {{ r.timeOfDay }}
+              {{ recurrenceLabel(r.recurrence) }} &middot; {{ r.timeOfDay }}
             </div>
           </li>
         </ul>
@@ -223,8 +224,8 @@ import { CategoriesService } from '../../core/services/categories.service';
           >
             <option value="next">Proximidad</option>
             <option value="priority">Prioridad</option>
-            <option value="title">Título</option>
-            <option value="category">Categoría</option>
+            <option value="title">TÃ­tulo</option>
+            <option value="category">CategorÃ­a</option>
             <option value="status">Estado</option>
             <option value="updated">Actualizado</option>
             <option value="created">Creado</option>
@@ -274,7 +275,7 @@ import { CategoriesService } from '../../core/services/categories.service';
               }}</time>
             </div>
             <div class="text-xs text-neutral-500">
-              {{ r.recurrence.frequency }} · {{ r.timeOfDay }}
+              {{ recurrenceLabel(r.recurrence) }} &middot; {{ r.timeOfDay }}
             </div>
           </li>
         </ul>
@@ -317,7 +318,7 @@ export class DashboardPage {
     this.settings.hourFormat() === '24' ? 'dd/MM/yy, HH:mm' : 'dd/MM/yy, h:mm a'
   );
 
-  // Todos + ordenación
+  // Todos + ordenaciÃ³n
   sortBy = signal<'next' | 'priority' | 'title' | 'category' | 'status' | 'updated' | 'created'>(
     'next'
   );
@@ -378,7 +379,7 @@ export class DashboardPage {
       });
   });
 
-  // Estado de pestaña Categorías
+  // Estado de pestaÃ±a CategorÃ­as
   selectedCategory = signal<string | undefined>(undefined);
   selectCategory(id: string | undefined) {
     this.selectedCategory.set(id);
@@ -389,8 +390,8 @@ export class DashboardPage {
     const chips = [
       {
         id: undefined as string | undefined,
-        name: 'Sin categoría',
-        emoji: '🗂️',
+        name: 'Sin categorí­a',
+        emoji: '🏷️',
         color: 'neutral-400',
       },
       ...list.map((c: any) => ({ id: c.id, name: c.name, emoji: c.emoji, color: c.color })),
@@ -446,6 +447,13 @@ export class DashboardPage {
   bgCategory(categoryId?: string): string {
     const c = this.cats.color(categoryId) ?? 'neutral-400';
     return 'bg-' + c.replace(/[^a-z0-9-]/gi, '');
+  }
+
+  recurrenceLabel(rec: {
+    frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
+    interval?: number;
+  }): string {
+    return formatRecurrenceLabel(rec.frequency, (rec as any).interval ?? 1);
   }
 
   onResume(id: string) {

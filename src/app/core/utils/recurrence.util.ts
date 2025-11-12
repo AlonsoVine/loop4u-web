@@ -109,6 +109,24 @@ export function computeNextOccurrence({ reminder, from }: NextOccurrenceInput): 
   return toIso(candidate);
 }
 
+/**
+ * Format a human label for recurrence "frequency + interval" in English.
+ * - interval 1 -> keep base words: daily/weekly/monthly/yearly
+ * - interval >1 -> "every N days/weeks/months/years"
+ */
+export function formatRecurrenceLabel(
+  freq: 'daily'|'weekly'|'monthly'|'yearly',
+  interval?: number
+): string {
+  const n = Math.max(1, interval || 1);
+  if (n === 1) return freq;
+  const unit = freq === 'daily' ? 'days'
+    : freq === 'weekly' ? 'weeks'
+    : freq === 'monthly' ? 'months'
+    : 'years';
+  return `every ${n} ${unit}`;
+}
+
 function nextWeeklyOccurrence(startCandidate: Date, by: Weekday[], interval: number, now: Date, timeOfDay: string): Date {
   // Orden de días empezando desde el inicio de semana del candidate
   const ordered: Weekday[] = orderFromCandidateWeek(startCandidate, by);
@@ -155,4 +173,3 @@ function nextMonthlyByMonthDay(candidate: Date, monthDay: number, interval: numb
     while (m >= 12) { y++; m -= 12; }
   }
 }
-
